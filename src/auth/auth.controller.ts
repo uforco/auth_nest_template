@@ -1,8 +1,8 @@
 // auth/auth.controller.ts
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Res, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { AuthService } from './auth.service';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 
 @Controller('auth')
 export class AuthController {
@@ -13,13 +13,36 @@ export class AuthController {
   @UseGuards(AuthGuard('google'))
   async googleAuth() {
     // Passport redirects automatically
+    console.log('Redirecting to Google for authentication...');
   }
 
   // Step 2: Google callback URL
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
-  async googleAuthRedirect(@Req() req: Request) {
+  async googleAuthRedirect(@Req() req: Request, @Res() res: Response) {
     // req.user is set by the strategy
-    return this.authService.generateToken(req.user);
+    const token = this.authService.generateToken(req.user);
+    // res.cookie('access_token', token, {
+    //   httpOnly: true,
+    //   secure: false, // true in production with HTTPS
+    //   sameSite: 'lax',
+    // });
+
+    //   res.send(`
+    //   <html>
+    //     <body>
+    //       <script>
+    //         window.opener.postMessage(${JSON.stringify({
+    //           token,
+    //         })}, "http://localhost:3000");
+    //         window.close();
+    //       </script>
+    //       <p>Logging in...</p>
+    //     </body>
+    //   </html>
+    // `);
+
+    // return res.redirect('http://localhost:3000');
+    return { token };
   }
 }

@@ -8,10 +8,10 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor() {
     console.log('GoogleStrategy ENV');
     super({
-      clientID: "fdgnjmsr", // from env
-      clientSecret: "sfdgnsrdn",
-      callbackURL: "sfdgnsdfgn",
-      scope: ['email', 'profile']
+      clientID: process.env.GOOGLE_CLIENT_ID as string, // from env
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+      callbackURL: process.env.GOOGLE_CLIENT_CALLBACK_URL as string,
+      scope: ['email', 'profile'],
     });
   }
 
@@ -21,7 +21,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: any,
     done: VerifyCallback,
   ): Promise<any> {
+    console.log('profile', profile);
+
+    if (!profile) {
+      return done(new Error('Google profile not found'), false);
+    }
+
     const { name, emails, photos } = profile;
+    console.log(profile);
     const user = {
       email: emails[0].value,
       firstName: name.givenName,
@@ -30,5 +37,6 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       accessToken,
     };
     done(null, user); // no session, so return user directly
+    // return user
   }
 }
